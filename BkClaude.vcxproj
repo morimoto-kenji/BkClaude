@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{F17537CE-AC91-4C13-9DE6-C9C983CDB5BA}</ProjectGuid>
+    <RootNamespace>BkClaude</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <PropertyGroup>
+    <TargetName>BkClaude</TargetName>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\B2PinSDK\PlugInSDK;$(SolutionDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>src\BkClaude.def</ModuleDefinitionFile>
+      <AdditionalDependencies>winhttp.lib;crypt32.lib;comctl32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <!-- The resource compiler has its own preprocessor; without this the
+           VERSIONINFO block cannot tell a Debug build from Release. -->
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\B2PinSDK\PlugInSDK;$(SolutionDir)third_party;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <ModuleDefinitionFile>src\BkClaude.def</ModuleDefinitionFile>
+      <AdditionalDependencies>winhttp.lib;crypt32.lib;comctl32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="src\PluginMain.cpp" />
+    <ClCompile Include="src\Settings.cpp" />
+    <ClCompile Include="src\AiClient.cpp" />
+    <ClCompile Include="src\AsyncRunner.cpp" />
+    <ClCompile Include="src\SettingsDialog.cpp" />
+    <ClCompile Include="src\MailActions.cpp" />
+    <ClCompile Include="src\ComposeActions.cpp" />
+    <ClCompile Include="src\AttachCheck.cpp" />
+    <ClCompile Include="src\ResultDialog.cpp" />
+    <ClCompile Include="src\Encoding.cpp" />
+    <ClCompile Include="src\Cache.cpp" />
+    <ClCompile Include="src\MailSource.cpp" />
+    <ClCompile Include="src\DiffView.cpp" />
+    <ClCompile Include="src\PluginUtil.cpp" />
+    <ClCompile Include="src\LearnStyle.cpp" />
+    <!-- BkCommon.cpp from the SDK is deliberately not compiled: nothing in
+         this plug-in uses it, and at /W4 it is the only source of warnings. -->
+    <ClCompile Include="third_party\B2PinSDK\PlugInSDK\BeckyAPI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Settings.h" />
+    <ClInclude Include="src\AiClient.h" />
+    <ClInclude Include="src\AsyncRunner.h" />
+    <ClInclude Include="src\SettingsDialog.h" />
+    <ClInclude Include="src\MailActions.h" />
+    <ClInclude Include="src\ComposeActions.h" />
+    <ClInclude Include="src\AttachCheck.h" />
+    <ClInclude Include="src\ResultDialog.h" />
+    <ClInclude Include="src\Encoding.h" />
+    <ClInclude Include="src\Cache.h" />
+    <ClInclude Include="src\MailSource.h" />
+    <ClInclude Include="src\DiffView.h" />
+    <ClInclude Include="src\PluginUtil.h" />
+    <ClInclude Include="src\LearnStyle.h" />
+    <ClInclude Include="src\Version.h" />
+    <ClInclude Include="third_party\B2PinSDK\PlugInSDK\BeckyApi.h" />
+    <ClInclude Include="third_party\json.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\BkClaude.def" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <!-- No post-build copy into Becky!'s PlugIns folder. It lives under
+       Program Files, so the copy needs elevation that a build never has,
+       and the step failed with MSB3021 on every build - noise that would
+       have hidden a real warning. Deployment is a separate, elevated step
+       (stop B2.exe, copy, restart), which is what it has to be anyway: the
+       DLL cannot be replaced while Becky! has it loaded. -->
+</Project>

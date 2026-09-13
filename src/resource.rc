@@ -1,0 +1,232 @@
+#include "resource.h"
+#include "Version.h"
+#include <windows.h>
+
+#pragma code_page(65001)
+
+LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
+
+// What Explorer shows on the DLL's プロパティ → 詳細 tab. The way to tell
+// which build is installed on a machine without starting Becky!.
+// 041104B0 = Japanese, Unicode.
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    BKCLAUDE_VERSION_RC_NUMERIC
+ PRODUCTVERSION BKCLAUDE_VERSION_RC_NUMERIC
+ FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+#if defined(_DEBUG) && BKCLAUDE_PRERELEASE
+ FILEFLAGS      VS_FF_DEBUG | VS_FF_PRERELEASE
+#elif defined(_DEBUG)
+ FILEFLAGS      VS_FF_DEBUG
+#elif BKCLAUDE_PRERELEASE
+ FILEFLAGS      VS_FF_PRERELEASE
+#else
+ FILEFLAGS      0
+#endif
+ FILEOS         VOS_NT_WINDOWS32
+ FILETYPE       VFT_DLL
+ FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041104B0"
+        BEGIN
+            VALUE "CompanyName",      "Morimoto, Kenji"
+            VALUE "FileDescription",  "Becky! Claude Plugin"
+            VALUE "FileVersion",      BKCLAUDE_VERSION_STRING
+            VALUE "InternalName",     "BkClaude"
+            VALUE "LegalCopyright",   "Copyright (C) 2026 Morimoto, Kenji"
+            VALUE "OriginalFilename", "BkClaude.dll"
+            VALUE "ProductName",      "Becky! Claude Plugin"
+            VALUE "ProductVersion",   BKCLAUDE_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x411, 1200
+    END
+END
+
+IDD_SETTINGS DIALOGEX 0, 0, 274, 464
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Becky! Claude Plugin - 設定"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    GROUPBOX        "Claude 設定", -1, 7, 4, 260, 52
+    LTEXT           "APIキー:", -1, 15, 19, 40, 10
+    EDITTEXT        IDC_APIKEY, 56, 17, 205, 14, ES_PASSWORD | ES_AUTOHSCROLL
+    LTEXT           "モデル:", -1, 15, 39, 40, 10
+    COMBOBOX        IDC_MODEL, 56, 37, 138, 90, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "接続を確認", IDC_TEST_SEND, 198, 36, 63, 16
+
+    // The group box already says these are caches, so the row labels and the
+    // note do not repeat it. The buttons still do: they destroy something the
+    // moment they are pressed, and have to read correctly on their own -
+    // "要約を削除" would sound like discarding a summary that had been made.
+    GROUPBOX        "キャッシュ設定", -1, 7, 62, 260, 66
+    LTEXT           "要約の保持時間", -1, 13, 77, 92, 10
+    EDITTEXT        IDC_SUMMARIZE_CACHE_MINUTES, 107, 75, 32, 14, ES_NUMBER | ES_AUTOHSCROLL
+    LTEXT           "分", -1, 142, 77, 10, 10
+    PUSHBUTTON      "要約キャッシュを削除", IDC_CLEAR_SUMMARIZE_CACHE, 163, 74, 99, 16
+    LTEXT           "翻訳の保持時間", -1, 13, 97, 92, 10
+    EDITTEXT        IDC_TRANSLATE_CACHE_MINUTES, 107, 95, 32, 14, ES_NUMBER | ES_AUTOHSCROLL
+    LTEXT           "分", -1, 142, 97, 10, 10
+    PUSHBUTTON      "翻訳キャッシュを削除", IDC_CLEAR_TRANSLATE_CACHE, 163, 94, 99, 16
+    LTEXT           "(0 で無効)", -1, 107, 114, 130, 10
+
+    // Two zones: the scan limits apply to every mailbox, so they sit apart at
+    // the top; the list and its two buttons act on one selected mailbox and
+    // must stay adjacent.
+    // Named after what is learned, not after one thing the result is used
+    // for: the same learning run now feeds the draft feature and the
+    // forgotten-attachment check both.
+    GROUPBOX        "送信済みメール学習設定", -1, 7, 134, 260, 146
+    LTEXT           "過去", -1, 13, 148, 20, 10
+    EDITTEXT        IDC_LEARN_MAX_MONTHS, 35, 146, 26, 14, ES_NUMBER | ES_AUTOHSCROLL
+    LTEXT           "ヶ月", -1, 64, 148, 20, 10
+    LTEXT           "最大", -1, 92, 148, 20, 10
+    EDITTEXT        IDC_LEARN_MAX_MAILS, 114, 146, 30, 14, ES_NUMBER | ES_AUTOHSCROLL
+    LTEXT           "通を学習する", -1, 147, 148, 66, 10
+    LTEXT           "(0 で期間制限なし)", -1, 35, 164, 100, 10
+
+    LTEXT           "学習フォルダと学習状況", -1, 13, 186, 248, 10
+    LISTBOX         IDC_SENT_FOLDERS, 13, 198, 248, 40, LBS_NOTIFY | WS_VSCROLL | WS_HSCROLL | WS_BORDER | WS_TABSTOP
+    // Left-aligned under the list, not right-aligned: these act on the
+    // selected row, and lining them up with OK/キャンセル below would read as
+    // another set of dialog-commit buttons.
+    // Order mirrors the list row's own order: folder, then its state.
+    PUSHBUTTON      "学習フォルダ解除", IDC_UNREGISTER_SELECTED, 13, 242, 90, 16
+    PUSHBUTTON      "学習データ削除", IDC_DELETE_PROFILE, 108, 242, 85, 16
+    LTEXT           "上の一覧で選択したメールボックスに対して実行します", -1, 13, 264, 248, 10
+
+    // Its own group rather than a line inside the learning settings: the
+    // phrase list is produced by the same learning run, but this switch
+    // governs something that happens at send time, in a window the settings
+    // above have nothing to do with.
+    //
+    // The check box carries the name of what is being switched on and off;
+    // what it works from goes on the line beneath, the same split this dialog
+    // already uses for "(0 でキャッシュ無効)" and the note under the folder
+    // list. A label that explained itself would stop reading as the name of
+    // a setting.
+    GROUPBOX        "添付忘れ確認設定", -1, 7, 284, 260, 46
+    AUTOCHECKBOX    "添付ファイルの付け忘れを確認する", IDC_WARN_MISSING_ATTACHMENT, 13, 297, 248, 10
+    LTEXT           "送信済みメールの学習で得た表現をもとに判定します", -1, 24, 313, 237, 10
+
+    EDITTEXT        IDC_TEST_RESULT, 10, 336, 254, 44, ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | WS_VSCROLL | NOT WS_TABSTOP
+
+    // Played straight, down to the 登録 button. The key is not masked - the
+    // README prints it - and the 状態 line is the only thing anywhere that
+    // reads it. See IsLicenseKeyValid for the rest of the joke.
+    GROUPBOX        "ライセンス設定", -1, 7, 386, 260, 46
+    LTEXT           "ライセンスキー:", -1, 13, 401, 56, 10
+    EDITTEXT        IDC_LICENSE_KEY, 72, 399, 131, 14, ES_AUTOHSCROLL
+    PUSHBUTTON      "登録", IDC_LICENSE_REGISTER, 208, 398, 53, 16
+    LTEXT           "", IDC_LICENSE_STATUS, 72, 418, 189, 10
+
+    PUSHBUTTON      "OK", IDOK, 135, 438, 60, 18
+    PUSHBUTTON      "キャンセル", IDCANCEL, 201, 438, 60, 18
+END
+
+// Shown while the Sent folder is scanned. Drives the scan itself: its timer
+// steps the job forward a few mails at a time so Becky! keeps getting its
+// message loop back. No system menu - the 中止 button is the way out.
+IDD_PROGRESS DIALOGEX 0, 0, 232, 76
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Becky! Claude Plugin - 送信済みメールの学習"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_PROGRESS_TEXT, 12, 12, 208, 28
+    PUSHBUTTON      "中止", IDCANCEL, 88, 50, 56, 16
+END
+
+// Shown while a compose-window action waits on the API. The request runs on a
+// worker thread, so unlike IDD_PROGRESS this one needs no timer and no forced
+// repaint - the message loop is free the whole time.
+IDD_BUSY DIALOGEX 0, 0, 200, 46
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Becky! Claude Plugin"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_BUSY_TEXT, 12, 17, 176, 12
+END
+
+// Shown before 校正 / 翻訳(英) overwrite the user's own prose - the only
+// actions in this plug-in that destroy something the user wrote. Nothing is
+// applied until 適用 is pressed.
+// Deliberately narrow: the text is reflowed to this width, so making the
+// window about as wide as the mail's own ~70-column wrapping keeps the
+// preview's line lengths close to what the finished mail will look like. A
+// wide window would reflow into long lines that resemble nothing.
+IDD_CONFIRM DIALOGEX 0, 0, 340, 460
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Becky! Claude Plugin"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    LTEXT           "", IDC_CONFIRM_HINT, 7, 6, 326, 20
+    CONTROL         "", IDC_CONFIRM_TEXT, "RICHEDIT50W",
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP |
+                    ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 7, 30, 326, 290
+    LTEXT           "修正の理由", IDC_CONFIRM_REASON_LABEL, 7, 326, 100, 10
+    CONTROL         "", IDC_CONFIRM_REASON, "RICHEDIT50W",
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP |
+                    ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 7, 338, 326, 90
+    DEFPUSHBUTTON   "適用", IDOK, 215, 434, 55, 18
+    PUSHBUTTON      "キャンセル", IDCANCEL, 278, 434, 55, 18
+END
+
+// Shown at send time when the body announces an attachment and none is
+// there. Buttons follow the Windows convention - the action that proceeds on
+// the left, the one that backs out on the right - but the focus does not: it
+// starts on 編集へ戻る, where Esc and the close box also land, so the safe
+// answer is the one a stray Enter gives. Reaching the send takes a deliberate
+// choice. Nothing is cancelled unless that choice is made - the plug-in never
+// decides on its own.
+IDD_ATTACHWARN DIALOGEX 0, 0, 268, 118
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Becky! Claude Plugin - 添付ファイルの確認"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    LTEXT           "このメールには添付ファイルがありません。", -1, 12, 12, 244, 10
+    LTEXT           "本文に次の表現があります。", -1, 12, 30, 244, 10
+    LTEXT           "", IDC_ATTACH_PHRASE, 22, 46, 234, 20
+    LTEXT           "添付し忘れていないか確認してください。", -1, 12, 72, 244, 10
+    PUSHBUTTON      "このまま送信する", IDOK, 94, 94, 80, 18
+    DEFPUSHBUTTON   "編集へ戻る", IDCANCEL, 180, 94, 80, 18
+END
+
+IDD_RESULT_SECTIONS DIALOGEX 0, 0, 520, 460
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Becky! Claude Plugin"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    // Sized to end on a whole line: 差出人 / 宛先 / Cc is the usual shape, so
+    // three lines fit and a fourth scrolls. Deliberately not sized "almost
+    // four" - a line sliced in half looks broken, where an honest scrollbar
+    // does not.
+    GROUPBOX        "メール送受信者", -1, 7, 4, 506, 72
+    CONTROL         "", IDC_RESULT_PEOPLE, "RICHEDIT50W",
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP |
+                    ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 13, 16, 494, 54
+    GROUPBOX        "メールの要約", -1, 7, 80, 506, 220
+    CONTROL         "", IDC_RESULT_SUMMARY, "RICHEDIT50W",
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP |
+                    ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 13, 92, 494, 202
+    GROUPBOX        "メールへの推奨対応", -1, 7, 304, 506, 124
+    CONTROL         "", IDC_RESULT_ACTION, "RICHEDIT50W",
+                    WS_CHILD | WS_VISIBLE | WS_BORDER | WS_VSCROLL | WS_TABSTOP |
+                    ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL, 13, 316, 494, 106
+    CONTROL         "返信", IDC_REPLY_BTN, "BUTTON", BS_SPLITBUTTON | WS_TABSTOP, 332, 434, 55, 18
+    CONTROL         "転送", IDC_FORWARD_BTN, "BUTTON", BS_SPLITBUTTON | WS_TABSTOP, 395, 434, 55, 18
+    DEFPUSHBUTTON   "OK", IDOK, 458, 434, 55, 18
+END
+
+IDD_RESULT DIALOGEX 0, 0, 320, 240
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Becky! Claude Plugin"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_RESULT_TEXT, 10, 10, 300, 195, ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "返信", IDC_REPLY_BTN, "BUTTON", BS_SPLITBUTTON | WS_TABSTOP, 70, 212, 55, 18
+    CONTROL         "転送", IDC_FORWARD_BTN, "BUTTON", BS_SPLITBUTTON | WS_TABSTOP, 133, 212, 55, 18
+    DEFPUSHBUTTON   "OK", IDOK, 196, 212, 55, 18
+END

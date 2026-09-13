@@ -1,0 +1,13 @@
+# Store text as LF in the repository, check out with the platform's native
+# ending. The sources are a mix today (some written with CRLF by Visual
+# Studio, some with LF), and this keeps that from ever showing up as a diff.
+* text=auto
+
+# Never touch these.
+# BKCLAUDE.HED is Shift_JIS with CRLF on purpose - a 1990s BBS upload header,
+# meant to be readable on the machines of the day - so git must not
+# re-encode or re-terminate it.
+*.HED binary
+*.dll binary
+*.png binary
+*.jpg binary

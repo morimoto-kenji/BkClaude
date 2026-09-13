@@ -1,0 +1,30 @@
+# Build output
+build/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.iobj
+*.ipdb
+*.res
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.ncb
+*.opt
+*.plg
+*.aps
+*.VC.db
+*.VC.opendb
+
+# Becky! Plug-in SDK: not redistributed here (see THIRD-PARTY-NOTICES.txt).
+# Download it from RimArts and unpack it to this path to build.
+third_party/B2PinSDK/
+
+# Local leftovers
+debug.log
+*.log
+*.#marks#
